@@ -36,4 +36,4 @@ offset_bottom = 711.0
 text = "Place Building"
 
 [node name="Base" parent="." instance=ExtResource("5_tbgi4")]
-position = Vector2(448, 256)
+position = Vector2(512, 320)
