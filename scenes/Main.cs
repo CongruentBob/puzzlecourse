@@ -40,7 +40,7 @@ public partial class Main : Node
 		if (cursorSprite.Visible & (!hoveredGridCell.HasValue || hoveredGridCell.Value != gridPosition))
 		{
 			hoveredGridCell = gridPosition;
-			gridManager.HighlightValidTiles(gridPosition, 3);
+			gridManager.HighlightBuildableTiles();
 		}	
 	}
 
