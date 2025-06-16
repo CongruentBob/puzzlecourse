@@ -41,7 +41,7 @@ public partial class Main : Node
 		{
 			hoveredGridCell = gridPosition;
 			gridManager.HighlightBuildableTiles();
-		}	
+		}
 	}
 
 	private void PlaceBuildingAtHoveredCellPosition()
