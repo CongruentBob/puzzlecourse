@@ -1,13 +1,14 @@
 using Game.Manager;
+using Game.Resources.Building;
 using Godot;
 
 namespace Game;
 
 public partial class Main : Node
 {
-    private PackedScene __towerScene = GD.Load<PackedScene>("res://scenes/building/tower.tscn");
-    private PackedScene __villageScene = GD.Load<PackedScene>("res://scenes/building/village.tscn");
-	private PackedScene _toPlaceBuildingScene;
+    private BuildingResource __towerResource = GD.Load<BuildingResource>("res://resources/building/tower.tres");
+    private BuildingResource __villageResources = GD.Load<BuildingResource>("res://resources/building/village.tres");
+	private BuildingResource _toPlaceBuildingResource;
 	private GridManager _gridManager;
 	private Sprite2D _cursorSprite;
     private Button _towerButton;
@@ -28,7 +29,7 @@ public partial class Main : Node
 
 		_towerButton.Pressed += OnPlaceTowerButtonPressed;
 		_villageButton.Pressed += OnPlaceVillageButtonPressed;
-		_toPlaceBuildingScene = __towerScene;
+		_toPlaceBuildingResource = __towerResource;
 	}
 
     public override void _UnhandledInput(InputEvent @event)
@@ -46,10 +47,10 @@ public partial class Main : Node
 	{
 		var gridPosition = _gridManager.GetMouseGridCellPosition();
 		_cursorSprite.GlobalPosition = 64 * gridPosition;
-		if (_cursorSprite.Visible & (!_hoveredGridCell.HasValue || _hoveredGridCell.Value != gridPosition))
+		if (_toPlaceBuildingResource != null && _cursorSprite.Visible & (!_hoveredGridCell.HasValue || _hoveredGridCell.Value != gridPosition))
 		{
 			_hoveredGridCell = gridPosition;
-			_gridManager.HighlightExpandedBuildableTiles(gridPosition, 3);
+			_gridManager.HighlightExpandedBuildableTiles(gridPosition, _toPlaceBuildingResource.BuildableRadius);
 		}
 	}
 
@@ -57,7 +58,7 @@ public partial class Main : Node
 	{
 		if (!_hoveredGridCell.HasValue) return;
 
-		var building = _toPlaceBuildingScene.Instantiate<Node2D>();
+		var building = _toPlaceBuildingResource.BuildingScene.Instantiate<Node2D>();
 		_ySortRoot.AddChild(building);
 		building.GlobalPosition = 64 * _hoveredGridCell.Value;
 
@@ -67,14 +68,14 @@ public partial class Main : Node
 
 	private void OnPlaceTowerButtonPressed()
 	{
-		_toPlaceBuildingScene = __towerScene;
+		_toPlaceBuildingResource = __towerResource;
 		_cursorSprite.Visible = true;
 		_gridManager.HighlightBuildableTiles();	
     }
 
 	private void OnPlaceVillageButtonPressed()
 	{
-		_toPlaceBuildingScene = __villageScene;
+		_toPlaceBuildingResource = __villageResources;
 		_cursorSprite.Visible = true;
 		_gridManager.HighlightBuildableTiles();	
     }

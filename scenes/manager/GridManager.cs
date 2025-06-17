@@ -92,7 +92,7 @@ public partial class GridManager : Node
 	private void UpdateValidBuildableTiles(BuildingComponent buildingComponent)
 	{
 		var rootCell = buildingComponent.GetGridCellPosition();
-		var validTiles = GetValidTilesInRadius(rootCell, buildingComponent.BuildableRadius);
+		var validTiles = GetValidTilesInRadius(rootCell, buildingComponent.BuildingResource.BuildableRadius);
 		_validBuildableTiles.UnionWith(validTiles);
 		_validBuildableTiles.ExceptWith(GetOccupiedTiles());
 	}
