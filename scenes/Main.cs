@@ -1,7 +1,3 @@
-using System;
-using Game.Manager;
-using Game.Resources.Building;
-using Game.UI;
 using Godot;
 
 namespace Game;

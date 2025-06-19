@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=4 uid="uid://qlqs3xo3wdvk"]
+[gd_scene load_steps=9 format=4 uid="uid://qlqs3xo3wdvk"]
 
 [ext_resource type="Script" uid="uid://d82vycyk3bs2" path="res://scenes/Main.cs" id="1_o5qli"]
 [ext_resource type="TileSet" uid="uid://bs81l5i1pk0pk" path="res://resources/highlight_tileset.tres" id="2_0wfyh"]
@@ -6,20 +6,17 @@
 [ext_resource type="PackedScene" uid="uid://cq7ocdsr0rnqd" path="res://scenes/manager/building_manager.tscn" id="2_tipki"]
 [ext_resource type="PackedScene" uid="uid://di2hqhnw3haho" path="res://scenes/manager/grid_manager.tscn" id="4_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://bf3swelutqe3j" path="res://scenes/building/base.tscn" id="5_tbgi4"]
-[ext_resource type="PackedScene" uid="uid://bvv42ps4ejymd" path="res://scenes/building/village.tscn" id="5_tefeu"]
 [ext_resource type="PackedScene" uid="uid://pcsxs6qdvjtt" path="res://scenes/ui/game_ui.tscn" id="7_o6xl0"]
-
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_0wfyh"]
-size = Vector2(64, 64)
+[ext_resource type="PackedScene" uid="uid://ceq4i00dxsgyu" path="res://scenes/building/building_ghost.tscn" id="9_85g3d"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_o5qli")
 
-[node name="BuildingManager" parent="." node_paths=PackedStringArray("_gridManager", "_gameUI", "_ySortRoot", "_cursorSprite") instance=ExtResource("2_tipki")]
+[node name="BuildingManager" parent="." node_paths=PackedStringArray("_gridManager", "_gameUI", "_ySortRoot") instance=ExtResource("2_tipki")]
 _gridManager = NodePath("../GridManager")
 _gameUI = NodePath("../GameUI")
 _ySortRoot = NodePath("../YSortRoot")
-_cursorSprite = NodePath("../Cursor")
+_buildingGhostScene = ExtResource("9_85g3d")
 
 [node name="GridManager" parent="." node_paths=PackedStringArray("_highlightTilemapLayer", "_baseTerrainTilemapLayer") instance=ExtResource("4_jyhfs")]
 _highlightTilemapLayer = NodePath("../HighlightTileMapLayer")
@@ -41,15 +38,8 @@ tile_set = ExtResource("2_sugp2")
 [node name="Base" parent="YSortRoot" instance=ExtResource("5_tbgi4")]
 position = Vector2(512, 320)
 
-[node name="Village" parent="YSortRoot" instance=ExtResource("5_tefeu")]
-position = Vector2(256, 320)
-
 [node name="HighlightTileMapLayer" type="TileMapLayer" parent="."]
 modulate = Color(1, 1, 1, 0.482353)
 tile_set = ExtResource("2_0wfyh")
-
-[node name="Cursor" type="Sprite2D" parent="."]
-texture = SubResource("PlaceholderTexture2D_0wfyh")
-centered = false
 
 [node name="GameUI" parent="." instance=ExtResource("7_o6xl0")]
