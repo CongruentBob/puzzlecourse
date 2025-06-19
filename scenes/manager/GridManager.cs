@@ -9,6 +9,8 @@ namespace Game.Manager;
 
 public partial class GridManager : Node
 {
+	private const string IS_BUILDABLE = "is_buildable";
+	private const string IS_WOOD = "is_wood";
 	[Export]
 	private TileMapLayer _highlightTilemapLayer;
 	[Export]
@@ -22,13 +24,13 @@ public partial class GridManager : Node
 		_allTileMapLayers = GetAllTileMapLayers(_baseTerrainTilemapLayer);
 	}
 
-	public bool IsTilePositionValid(Vector2I tilePosition)
+	public bool TileHasCustomData(Vector2I tilePosition, string dataName)
 	{
 		foreach (var layer in _allTileMapLayers)
 		{
 			var customData = layer.GetCellTileData(tilePosition);
 			if (customData == null) continue;
-			return (bool)customData.GetCustomData("buildable");
+			return (bool)customData.GetCustomData(dataName);
 		}
 		return false;
 	}
@@ -48,11 +50,20 @@ public partial class GridManager : Node
 
 	public void HighlightExpandedBuildableTiles(Vector2I rootCell, int radius)
 	{
-		ClearHighlightedTiles();
 		HighlightBuildableTiles();
 
 		var validTiles = GetValidTilesInRadius(rootCell, radius).ToHashSet();
 		var expandedTiles = validTiles.Except(_validBuildableTiles).Except(GetOccupiedTiles());
+		foreach (var tilePosition in expandedTiles)
+		{
+			_highlightTilemapLayer.SetCell(tilePosition, 0, Vector2I.Right);
+		}
+	}
+
+	public void HighlightResourceTiles(Vector2I rootCell, int radius)
+	{
+		var resourceTiles = GetTilesInRadius(rootCell, radius, (tilePosition) => TileHasCustomData(tilePosition, IS_WOOD)).ToHashSet();
+		var expandedTiles = resourceTiles.Except(_validBuildableTiles).Except(GetOccupiedTiles());
 		foreach (var tilePosition in expandedTiles)
 		{
 			_highlightTilemapLayer.SetCell(tilePosition, 0, Vector2I.Right);
@@ -88,7 +99,7 @@ public partial class GridManager : Node
 		result.Add(rootTileMapLayer);
 		return result;
 	}
-
+	
 	private void UpdateValidBuildableTiles(BuildingComponent buildingComponent)
 	{
 		var rootCell = buildingComponent.GetGridCellPosition();
@@ -104,13 +115,16 @@ public partial class GridManager : Node
 	}
 
 	private IEnumerable<Vector2I> GetValidTilesInRadius(Vector2I rootCell, int radius)
+	    => GetTilesInRadius(rootCell, radius, (tilePosition) => TileHasCustomData(tilePosition, IS_BUILDABLE));
+
+	private IEnumerable<Vector2I> GetTilesInRadius(Vector2I rootCell, int radius, Func<Vector2I, bool> filterFn)
 	{
 		for (var x = rootCell.X - radius; x <= rootCell.X + radius; x++)
 		{
 			for (var y = rootCell.Y - radius; y <= rootCell.Y + radius; y++)
 			{
 				var tilePosition = new Vector2I(x, y);
-				if (!IsTilePositionValid(tilePosition)) continue;
+				if (!filterFn(tilePosition)) continue;
 				yield return tilePosition;
 			}
 		}
