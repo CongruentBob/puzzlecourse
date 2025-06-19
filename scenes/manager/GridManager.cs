@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Game.Autoload;
 using Game.Component;
+using Game.Resources.Building;
 using Godot;
 
 namespace Game.Manager;
@@ -11,11 +12,16 @@ public partial class GridManager : Node
 {
 	private const string IS_BUILDABLE = "is_buildable";
 	private const string IS_WOOD = "is_wood";
+
+	[Signal]
+	public delegate void ResourceTilesUpdatedEventHandler(int collectedTilesCount);
+
 	[Export]
 	private TileMapLayer _highlightTilemapLayer;
 	[Export]
 	private TileMapLayer _baseTerrainTilemapLayer;
 	private readonly HashSet<Vector2I> _validBuildableTiles = [];
+	private readonly HashSet<Vector2I> _collectedResourceTiles = [];
 	private List<TileMapLayer> _allTileMapLayers = [];
 
 	public override void _Ready()
@@ -48,11 +54,11 @@ public partial class GridManager : Node
 		}
 	}
 
-	public void HighlightExpandedBuildableTiles(Vector2I rootCell, int radius)
+	public void HighlightExpandedBuildableTiles(Vector2I rootCell, BuildingResource buildingResource)
 	{
 		HighlightBuildableTiles();
 
-		var validTiles = GetValidTilesInRadius(rootCell, radius).ToHashSet();
+		var validTiles = GetValidTilesInRadius(rootCell, buildingResource).ToHashSet();
 		var expandedTiles = validTiles.Except(_validBuildableTiles).Except(GetOccupiedTiles());
 		foreach (var tilePosition in expandedTiles)
 		{
@@ -60,9 +66,9 @@ public partial class GridManager : Node
 		}
 	}
 
-	public void HighlightResourceTiles(Vector2I rootCell, int radius)
+	public void HighlightResourceTiles(Vector2I rootCell, BuildingResource buildingResource)
 	{
-		var resourceTiles = GetTilesInRadius(rootCell, radius, (tilePosition) => TileHasCustomData(tilePosition, IS_WOOD)).ToHashSet();
+		var resourceTiles = GetResourceTilesInRadius(rootCell, buildingResource).ToHashSet();
 		var expandedTiles = resourceTiles.Except(_validBuildableTiles).Except(GetOccupiedTiles());
 		foreach (var tilePosition in expandedTiles)
 		{
@@ -103,9 +109,24 @@ public partial class GridManager : Node
 	private void UpdateValidBuildableTiles(BuildingComponent buildingComponent)
 	{
 		var rootCell = buildingComponent.GetGridCellPosition();
-		var validTiles = GetValidTilesInRadius(rootCell, buildingComponent.BuildingResource.BuildableRadius);
+		var validTiles = GetValidTilesInRadius(rootCell, buildingComponent.BuildingResource);
 		_validBuildableTiles.UnionWith(validTiles);
 		_validBuildableTiles.ExceptWith(GetOccupiedTiles());
+	}
+
+	private void UpdateCollectedResourceTiles(BuildingComponent buildingComponent)
+	{
+		var rootCell = buildingComponent.GetGridCellPosition();
+		var resourceTiles = GetResourceTilesInRadius(rootCell, buildingComponent.BuildingResource);
+
+		var oldCount = _collectedResourceTiles.Count;
+		_collectedResourceTiles.UnionWith(resourceTiles);
+		var newCount = _collectedResourceTiles.Count;
+
+		if (oldCount != newCount)
+		{
+			EmitSignal(SignalName.ResourceTilesUpdated, newCount);
+		}
 	}
 
 	private IEnumerable<Vector2I> GetOccupiedTiles()
@@ -114,8 +135,10 @@ public partial class GridManager : Node
 		return buildingComponents.Select(c => c.GetGridCellPosition());
 	}
 
-	private IEnumerable<Vector2I> GetValidTilesInRadius(Vector2I rootCell, int radius)
-	    => GetTilesInRadius(rootCell, radius, (tilePosition) => TileHasCustomData(tilePosition, IS_BUILDABLE));
+	private IEnumerable<Vector2I> GetValidTilesInRadius(Vector2I rootCell, BuildingResource buildingResource)
+	    => GetTilesInRadius(rootCell, buildingResource.BuildableRadius, (tilePosition) => TileHasCustomData(tilePosition, IS_BUILDABLE));
+	private IEnumerable<Vector2I> GetResourceTilesInRadius(Vector2I rootCell, BuildingResource buildingResource)
+	    => GetTilesInRadius(rootCell, buildingResource.ResourceRadius, (tilePosition) => TileHasCustomData(tilePosition, IS_WOOD));
 
 	private IEnumerable<Vector2I> GetTilesInRadius(Vector2I rootCell, int radius, Func<Vector2I, bool> filterFn)
 	{
@@ -130,8 +153,9 @@ public partial class GridManager : Node
 		}
 	}
 
-    private void OnBuildingPlaced(BuildingComponent buildingComponent)
+	private void OnBuildingPlaced(BuildingComponent buildingComponent)
 	{
 		UpdateValidBuildableTiles(buildingComponent);
+		UpdateCollectedResourceTiles(buildingComponent);
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using Game.Manager;
 using Game.Resources.Building;
 using Godot;
@@ -30,7 +31,9 @@ public partial class Main : Node
 		_towerButton.Pressed += OnPlaceTowerButtonPressed;
 		_villageButton.Pressed += OnPlaceVillageButtonPressed;
 		_toPlaceBuildingResource = __towerResource;
+		_gridManager.ResourceTilesUpdated += OnResourceTilesUpdated;
 	}
+
 
     public override void _UnhandledInput(InputEvent @event)
 	{
@@ -51,8 +54,8 @@ public partial class Main : Node
 		{
 			_hoveredGridCell = gridPosition;
 			_gridManager.ClearHighlightedTiles();
-			_gridManager.HighlightExpandedBuildableTiles(gridPosition, _toPlaceBuildingResource.BuildableRadius);
-			_gridManager.HighlightResourceTiles(gridPosition, _toPlaceBuildingResource.ResourceRadius);
+			_gridManager.HighlightExpandedBuildableTiles(gridPosition, _toPlaceBuildingResource);
+			_gridManager.HighlightResourceTiles(gridPosition, _toPlaceBuildingResource);
 		}
 	}
 
@@ -80,5 +83,10 @@ public partial class Main : Node
 		_toPlaceBuildingResource = __villageResources;
 		_cursorSprite.Visible = true;
 		_gridManager.HighlightBuildableTiles();	
+    }
+
+    private void OnResourceTilesUpdated(int collectedTilesCount)
+    {
+		GD.Print(collectedTilesCount);
     }
 }
