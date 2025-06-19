@@ -8,8 +8,6 @@ namespace Game;
 
 public partial class Main : Node
 {
-    private BuildingResource __towerResource = GD.Load<BuildingResource>("res://resources/building/tower.tres");
-    private BuildingResource __villageResources = GD.Load<BuildingResource>("res://resources/building/village.tres");
 	private BuildingResource _toPlaceBuildingResource;
 	private GridManager _gridManager;
 	private Sprite2D _cursorSprite;
@@ -26,9 +24,7 @@ public partial class Main : Node
 
 		_cursorSprite.Visible = false;
 
-		_gameUI.PlaceTowerButtonPressed += OnPlaceTowerButtonPressed;
-		_gameUI.PlaceVillageButtonPressed += OnPlaceVillageButtonPressed;
-		_toPlaceBuildingResource = __towerResource;
+		_gameUI.BuildingResourceSelected += OnBuildingResourceSelectedPressed;
 		_gridManager.ResourceTilesUpdated += OnResourceTilesUpdated;
 	}
 
@@ -69,16 +65,9 @@ public partial class Main : Node
 		_gridManager.ClearHighlightedTiles();
 	}
 
-	private void OnPlaceTowerButtonPressed()
+	private void OnBuildingResourceSelectedPressed(BuildingResource buildingResource)
 	{
-		_toPlaceBuildingResource = __towerResource;
-		_cursorSprite.Visible = true;
-		_gridManager.HighlightBuildableTiles();	
-    }
-
-	private void OnPlaceVillageButtonPressed()
-	{
-		_toPlaceBuildingResource = __villageResources;
+		_toPlaceBuildingResource = buildingResource;
 		_cursorSprite.Visible = true;
 		_gridManager.HighlightBuildableTiles();	
     }
