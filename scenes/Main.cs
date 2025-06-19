@@ -1,6 +1,7 @@
 using System;
 using Game.Manager;
 using Game.Resources.Building;
+using Game.UI;
 using Godot;
 
 namespace Game;
@@ -12,24 +13,21 @@ public partial class Main : Node
 	private BuildingResource _toPlaceBuildingResource;
 	private GridManager _gridManager;
 	private Sprite2D _cursorSprite;
-    private Button _towerButton;
-    private Button _villageButton;
     private Node2D _ySortRoot;
-
-	private Vector2I? _hoveredGridCell;
+    private GameUI _gameUI;
+    private Vector2I? _hoveredGridCell;
 
 	public override void _Ready()
 	{
 		_cursorSprite = GetNode<Sprite2D>("Cursor");
 		_gridManager = GetNode<GridManager>("GridManager");
-		_towerButton = GetNode<Button>("PlaceTowerButton");
-		_villageButton = GetNode<Button>("PlaceVillageButton");
 		_ySortRoot = GetNode<Node2D>("YSortRoot");
+		_gameUI = GetNode<GameUI>("GameUI");
 
 		_cursorSprite.Visible = false;
 
-		_towerButton.Pressed += OnPlaceTowerButtonPressed;
-		_villageButton.Pressed += OnPlaceVillageButtonPressed;
+		_gameUI.PlaceTowerButtonPressed += OnPlaceTowerButtonPressed;
+		_gameUI.PlaceVillageButtonPressed += OnPlaceVillageButtonPressed;
 		_toPlaceBuildingResource = __towerResource;
 		_gridManager.ResourceTilesUpdated += OnResourceTilesUpdated;
 	}
