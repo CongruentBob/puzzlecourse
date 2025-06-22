@@ -56,8 +56,6 @@ public partial class GridManager : Node
 
 	public void HighlightExpandedBuildableTiles(Vector2I rootCell, BuildingResource buildingResource)
 	{
-		HighlightBuildableTiles();
-
 		var validTiles = GetValidTilesInRadius(rootCell, buildingResource).ToHashSet();
 		var expandedTiles = validTiles.Except(_validBuildableTiles).Except(GetOccupiedTiles());
 		foreach (var tilePosition in expandedTiles)
