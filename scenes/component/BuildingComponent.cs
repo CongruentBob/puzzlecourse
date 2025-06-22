@@ -10,7 +10,7 @@ public partial class BuildingComponent : Node2D
 	public string BuildingResourcePath { get; private set; }
 
 	public BuildingResource BuildingResource { get; private set; }
-	
+
 	public override void _Ready()
 	{
 		if (BuildingResourcePath != null)
@@ -27,5 +27,11 @@ public partial class BuildingComponent : Node2D
 		var gridPosition = GlobalPosition / 64;
 		gridPosition = gridPosition.Floor();
 		return new Vector2I((int)gridPosition.X, (int)gridPosition.Y);
+	}
+
+	public void Destroy()
+	{
+		GameEvents.EmitBuildingDestroyed(this);
+		Owner.QueueFree();
 	}
 }

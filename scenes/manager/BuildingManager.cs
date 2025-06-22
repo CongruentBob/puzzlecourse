@@ -1,4 +1,6 @@
+using System.Linq;
 using Game.Building;
+using Game.Component;
 using Game.Resources.Building;
 using Game.UI;
 using Godot;
@@ -110,13 +112,19 @@ public partial class BuildingManager : Node
 		building.GlobalPosition = 64 * _hoveredGridCell;
 
 		_currentlyUsedResourceCount += _toPlaceBuildingResource.ResourceCost;
-		
+
 		ChangeState(State.Normal);
 	}
 
 	private void DestroyBuildingAtHoveredCellPosition()
 	{
+		var buildingComponent = GetTree().GetNodesInGroup(nameof(BuildingComponent)).Cast<BuildingComponent>()
+			.FirstOrDefault((buildingComponent) => buildingComponent.GetGridCellPosition() == _hoveredGridCell);
 
+		if (buildingComponent == null) return;
+
+		_currentlyUsedResourceCount -= buildingComponent.BuildingResource.ResourceCost;
+		buildingComponent.Destroy();
 	}
 
 	private void ClearBuildingGhost()
