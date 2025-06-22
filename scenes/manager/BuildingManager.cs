@@ -7,6 +7,9 @@ namespace Game.Manager;
 
 public partial class BuildingManager : Node
 {
+	private readonly StringName ACTION_LEFT_CLICK = "left_click";
+	private readonly StringName ACTION_CANCEL = "cancel";
+
 	[Export]
 	private GridManager _gridManager;
 	[Export]
@@ -32,10 +35,14 @@ public partial class BuildingManager : Node
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
-		if (_hoveredGridCell.HasValue
-			&& _toPlaceBuildingResource != null
-			&& Input.IsActionJustPressed("left_click")
-			&& IsBuildingPlacableAtTile(_hoveredGridCell.Value))
+		if (@event.IsActionPressed(ACTION_CANCEL))
+		{
+			ClearBuildingGhost();
+		}
+		else if (_hoveredGridCell.HasValue
+				&& _toPlaceBuildingResource != null
+				&& Input.IsActionJustPressed(ACTION_LEFT_CLICK)
+				&& IsBuildingPlacableAtTile(_hoveredGridCell.Value))
 		{
 			PlaceBuildingAtHoveredCellPosition();
 		}
@@ -57,7 +64,7 @@ public partial class BuildingManager : Node
 	private void UpdateGridDisplay()
 	{
 		if (!_hoveredGridCell.HasValue) return;
-		
+
 		_gridManager.ClearHighlightedTiles();
 		_gridManager.HighlightBuildableTiles();
 		if (IsBuildingPlacableAtTile(_hoveredGridCell.Value))
@@ -80,11 +87,19 @@ public partial class BuildingManager : Node
 		_ySortRoot.AddChild(building);
 		building.GlobalPosition = 64 * _hoveredGridCell.Value;
 
+		_currentlyUsedResourceCount += _toPlaceBuildingResource.ResourceCost;
+		ClearBuildingGhost();
+	}
+
+	private void ClearBuildingGhost()
+	{
 		_hoveredGridCell = null;
 		_gridManager.ClearHighlightedTiles();
 
-		_currentlyUsedResourceCount += _toPlaceBuildingResource.ResourceCost;
-		_buildingGhost.QueueFree();
+		if (IsInstanceValid(_buildingGhost))
+		{
+			_buildingGhost.QueueFree();
+		}
 		_buildingGhost = null;
 	}
 
